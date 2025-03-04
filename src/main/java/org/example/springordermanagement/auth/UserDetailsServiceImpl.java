@@ -1,7 +1,7 @@
 package org.example.springordermanagement.auth;
 
-import org.example.springordermanagement.Customer;
-import org.example.springordermanagement.CustomerRepository;
+import org.example.springordermanagement.customer.Customer;
+import org.example.springordermanagement.customer.CustomerRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

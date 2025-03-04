@@ -1,4 +1,4 @@
-package org.example.springordermanagement;
+package org.example.springordermanagement.error;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

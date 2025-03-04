@@ -1,9 +1,10 @@
-package org.example.springordermanagement;
+package org.example.springordermanagement.customer;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import org.example.springordermanagement.order.Order;
 import org.example.springordermanagement.auth.Role;
 
 import java.util.List;
