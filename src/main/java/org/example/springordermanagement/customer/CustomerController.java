@@ -1,4 +1,4 @@
-package org.example.springordermanagement;
+package org.example.springordermanagement.customer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -47,11 +47,6 @@ public class CustomerController {
         else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    }
-
-    @PostMapping
-    public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer) {
-        return new ResponseEntity<>(customerService.addCustomer(customer), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

@@ -1,7 +1,7 @@
 package org.example.springordermanagement.auth;
 
 import jakarta.validation.Valid;
-import org.example.springordermanagement.*;
+import org.example.springordermanagement.customer.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

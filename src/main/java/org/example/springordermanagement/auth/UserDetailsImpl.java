@@ -3,7 +3,7 @@ package org.example.springordermanagement.auth;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import lombok.Getter;
-import org.example.springordermanagement.Customer;
+import org.example.springordermanagement.customer.Customer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

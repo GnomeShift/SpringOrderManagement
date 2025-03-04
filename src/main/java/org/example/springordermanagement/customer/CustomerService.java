@@ -1,4 +1,4 @@
-package org.example.springordermanagement;
+package org.example.springordermanagement.customer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,10 +17,6 @@ public class CustomerService {
 
     public Optional<Customer> getCustomerById(long id) {
         return customerRepository.findById(id);
-    }
-
-    public Customer addCustomer(Customer customer) {
-        return customerRepository.save(customer);
     }
 
     public Customer updateCustomer(long id, Customer customer) {

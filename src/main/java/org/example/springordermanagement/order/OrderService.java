@@ -1,5 +1,7 @@
-package org.example.springordermanagement;
+package org.example.springordermanagement.order;
 
+import org.example.springordermanagement.customer.Customer;
+import org.example.springordermanagement.customer.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

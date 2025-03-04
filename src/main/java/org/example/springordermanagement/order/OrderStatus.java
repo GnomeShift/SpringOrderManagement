@@ -1,4 +1,4 @@
-package org.example.springordermanagement;
+package org.example.springordermanagement.order;
 
 public enum OrderStatus {
     PROCESSING,

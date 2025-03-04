@@ -1,4 +1,4 @@
-package org.example.springordermanagement;
+package org.example.springordermanagement.error;
 
 import lombok.Getter;
 import lombok.Setter;
