@@ -3,6 +3,10 @@ package org.example.springordermanagement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +19,7 @@ public class CustomerController {
     private CustomerService customerService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Customer>> getAllCustomers() {
         return new ResponseEntity<>(customerService.getAllCustomers(), HttpStatus.OK);
 
@@ -22,10 +27,22 @@ public class CustomerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Customer> getCustomerById(@PathVariable long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = auth.getName();
+
         Optional<Customer> customer = customerService.getCustomerById(id);
 
         if (customer.isPresent()) {
-            return new ResponseEntity<>(customer.get(), HttpStatus.OK);
+            if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+                return ResponseEntity.ok(customer.get());
+            }
+
+            if (customer.get().getEmail().equals(currentEmail)) {
+                return ResponseEntity.ok(customer.get());
+            }
+            else {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
         }
         else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
