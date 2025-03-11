@@ -7,6 +7,7 @@ import lombok.Data;
 import org.example.springordermanagement.order.Order;
 import org.example.springordermanagement.auth.Role;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -39,6 +40,8 @@ public class Customer {
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[a-zA-Z\\d!@#$%^&*()_+{}\\[\\]:;<>,.?~`\"'|\\\\/-]{6,}$")
     @NotNull
     private String password;
+
+    private LocalDate registrationDate;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "customer_roles",
