@@ -62,7 +62,8 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/**").permitAll()
+                        auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().
+                                requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/customers/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated()
                                 .requestMatchers("/api/orders/**").hasRole("ADMIN")

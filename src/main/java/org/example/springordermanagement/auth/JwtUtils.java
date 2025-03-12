@@ -8,38 +8,76 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.Date;
 
 @Component
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+    private final int jwtExpirationMs;
+    private final Key privateKey;
+    private final Key publicKey;
 
-    @Value("${jwt.expirationMs}")
-    private int jwtExpirationMs;
+    private static final String ALGORITHM = "RSA";
 
-    private final KeyPair keyPair;
+    public JwtUtils(@Value("${jwt.expirationMs}") int jwtExpirationMs,
+                    @Value("${jwt.privateKeyPath}") String privateKeyPath,
+                    @Value("${jwt.publicKeyPath}") String publicKeyPath) {
+        this.jwtExpirationMs = jwtExpirationMs;
 
-    public JwtUtils() {
         try {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2048);
-            keyPair = keyPairGenerator.generateKeyPair();
+            privateKey = getPrivateKey(privateKeyPath);
+            publicKey = getPublicKey(publicKeyPath);
         }
-        catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("RSA algorithm not available", e);
+        catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            logger.error("Error loading keys: {}", e.getMessage(), e);
+            throw new IllegalStateException("Failed to load keys", e);
         }
     }
 
-    private Key getPrivateKey() {
-        return keyPair.getPrivate();
+    private PrivateKey getPrivateKey(String path) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        try {
+            String privateKeyString = new String(Files.readAllBytes(Paths.get(path)));
+            privateKeyString = privateKeyString.replace("-----BEGIN PRIVATE KEY-----", "");
+            privateKeyString = privateKeyString.replace("-----END PRIVATE KEY-----", "");
+            privateKeyString = privateKeyString.replaceAll("\\s+", "");
+
+            byte[] keyBytes = Base64.getDecoder().decode(privateKeyString);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+            KeyFactory kf = KeyFactory.getInstance(ALGORITHM);
+
+            return kf.generatePrivate(keySpec);
+        }
+        catch (Exception e) {
+            logger.error("Exception while reading private key: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
-    private Key getPublicKey() {
-        return keyPair.getPublic();
+    private PublicKey getPublicKey(String path) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        try {
+            String publicKeyString = new String(Files.readAllBytes(Paths.get(path)));
+            publicKeyString = publicKeyString.replace("-----BEGIN PUBLIC KEY-----", "");
+            publicKeyString = publicKeyString.replace("-----END PUBLIC KEY-----", "");
+            publicKeyString = publicKeyString.replaceAll("\\s+", "");
+
+            byte[] keyBytes = Base64.getDecoder().decode(publicKeyString);
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory kf = KeyFactory.getInstance(ALGORITHM);
+
+            return kf.generatePublic(keySpec);
+        }
+        catch (Exception e) {
+            logger.error("Exception while reading public key: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     public String generateJwtToken(Authentication authentication) {
@@ -48,16 +86,16 @@ public class JwtUtils {
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder().subject(userPrincipal.getUsername()).issuedAt(now).expiration(expiryDate)
-                .signWith(getPrivateKey(), SignatureAlgorithm.RS256).compact();
+                .signWith(privateKey, SignatureAlgorithm.RS256).compact();
     }
 
     public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser().verifyWith(keyPair.getPublic()).build().parseSignedClaims(token).getPayload().getSubject();
+        return Jwts.parser().verifyWith((PublicKey) publicKey).build().parseSignedClaims(token).getPayload().getSubject();
     }
 
     public boolean validateJwtToken(String token) {
         try {
-            Jwts.parser().verifyWith(keyPair.getPublic()).build().parse(token);
+            Jwts.parser().verifyWith((PublicKey) publicKey).build().parse(token);
             return true;
         }
         catch (MalformedJwtException e) {
