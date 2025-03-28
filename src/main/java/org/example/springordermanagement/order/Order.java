@@ -1,8 +1,10 @@
-package org.example.springordermanagement;
+package org.example.springordermanagement.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.example.springordermanagement.product.Product;
+import org.example.springordermanagement.customer.Customer;
 
 import java.util.Date;
 import java.util.List;

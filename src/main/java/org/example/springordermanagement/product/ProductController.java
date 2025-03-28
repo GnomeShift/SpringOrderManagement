@@ -1,4 +1,4 @@
-package org.example.springordermanagement;
+package org.example.springordermanagement.product;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

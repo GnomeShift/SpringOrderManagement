@@ -1,4 +1,4 @@
-package org.example.springordermanagement;
+package org.example.springordermanagement.product;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
