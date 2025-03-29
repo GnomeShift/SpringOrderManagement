@@ -8,6 +8,7 @@ import org.example.springordermanagement.order.Order;
 import org.example.springordermanagement.auth.Role;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -42,6 +43,12 @@ public class Customer {
     private String password;
 
     private LocalDate registrationDate;
+
+    @Column(name = "failed_login_attempts", nullable = false, columnDefinition = "integer default 0")
+    private int failedLoginAttempt;
+
+    @Column(name = "lock_time")
+    private LocalDateTime lockTime;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "customer_roles",
