@@ -2,8 +2,10 @@ package org.example.springordermanagement.auth;
 
 import jakarta.validation.Valid;
 import org.example.springordermanagement.customer.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,29 +27,49 @@ public class AuthController {
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
+    private final BruteforceProtectionService bruteforceProtectionService;
 
     public AuthController(AuthenticationManager authManager, CustomerRepository customerRepository,
-                          RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils) {
+                          RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils,
+                          BruteforceProtectionService bruteforceProtectionService) {
         this.authManager = authManager;
         this.customerRepository = customerRepository;
         this.roleRepository = roleRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
+        this.bruteforceProtectionService = bruteforceProtectionService;
     }
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticate(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        String email = loginRequest.getEmail();
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        if (bruteforceProtectionService.isLocked(email)) {
+            long remainingLockTime = bruteforceProtectionService.getLockTime(email);
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new MessageResponse("Too many login attempts. Try again in " + remainingLockTime + " minutes."));
+        }
 
-        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), roles));
+        try {
+            Authentication authentication = authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtUtils.generateJwtToken(authentication);
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+            bruteforceProtectionService.resetFailedLoginAttempts(email);
+
+            return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), roles));
+        }
+        catch (BadCredentialsException e) {
+            bruteforceProtectionService.registerFailedLogin(email);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Invalid credentials!"));
+        }
     }
 
     @PostMapping("/signup")
@@ -64,6 +86,8 @@ public class AuthController {
         customer.setPhone(signUpRequest.getPhone());
         customer.setPassword(encoder.encode(signUpRequest.getPassword()));
         customer.setRegistrationDate(LocalDate.now());
+        customer.setFailedLoginAttempt(0);
+        customer.setLockTime(null);
 
         Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();
