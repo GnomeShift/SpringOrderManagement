@@ -32,7 +32,7 @@ public class ProductController {
             return new ResponseEntity<>(product.get(), HttpStatus.OK);
         }
         else {
-            return null;
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -53,7 +53,7 @@ public class ProductController {
             return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
         }
         else {
-            return null;
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
