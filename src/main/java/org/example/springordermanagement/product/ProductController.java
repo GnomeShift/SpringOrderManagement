@@ -1,5 +1,6 @@
 package org.example.springordermanagement.product;
 
+import jakarta.validation.Valid;
 import org.example.springordermanagement.auth.MessageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,12 +41,12 @@ public class ProductController {
         if (productRepository.existsByName(product.getName())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Product already exists!"));
         }
-
+  
         return new ResponseEntity<>(productService.addProduct(product), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable long id, @RequestBody Product product) {
+    public ResponseEntity<Product> updateProduct(@PathVariable long id, @Valid @RequestBody Product product) {
         Product updatedProduct = productService.updateProduct(id, product);
 
         if (updatedProduct != null) {
