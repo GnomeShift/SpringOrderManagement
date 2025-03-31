@@ -19,10 +19,11 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Size(min = 2)
+    @Size(min = 2, max = 20)
     @NotNull
     private String name;
-    @Size(min = 2)
+
+    @Size(min = 2, max = 20)
     @NotNull
     private String surname;
 
@@ -32,6 +33,7 @@ public class Customer {
 
     @Email
     @NotNull
+    @Size(max = 100)
     private String email;
 
     @Pattern(regexp = "^\\+7\\(\\d{3}\\)\\d{3}-\\d{2}-\\d{2}$")
