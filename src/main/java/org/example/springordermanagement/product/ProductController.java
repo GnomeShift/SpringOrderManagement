@@ -1,5 +1,6 @@
 package org.example.springordermanagement.product;
 
+import org.example.springordermanagement.auth.MessageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,9 @@ import java.util.Optional;
 public class ProductController {
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     @GetMapping
     public List<Product> getAllProducts() {
@@ -32,7 +36,11 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+    public ResponseEntity<?> addProduct(@RequestBody Product product) {
+        if (productRepository.existsByName(product.getName())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Product already exists!"));
+        }
+
         return new ResponseEntity<>(productService.addProduct(product), HttpStatus.CREATED);
     }
 
