@@ -2,6 +2,7 @@ package org.example.springordermanagement.order;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.example.springordermanagement.product.Product;
 import org.example.springordermanagement.customer.Customer;
@@ -20,6 +21,7 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "customer_id")
     @JsonBackReference
+    @NotNull
     private Customer customer;
 
     private Date orderDate;
@@ -32,6 +34,7 @@ public class Order {
             joinColumns = @JoinColumn(name = "order_id"),
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
+    @NotNull
     private List<Product> products;
 
     public double getTotalPrice() {
