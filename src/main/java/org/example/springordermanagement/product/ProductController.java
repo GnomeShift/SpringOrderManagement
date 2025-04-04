@@ -1,5 +1,7 @@
 package org.example.springordermanagement.product;
 
+import jakarta.validation.Valid;
+import org.example.springordermanagement.auth.MessageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,9 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private ProductRepository productRepository;
+
     @GetMapping
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
@@ -27,24 +32,28 @@ public class ProductController {
             return new ResponseEntity<>(product.get(), HttpStatus.OK);
         }
         else {
-            return null;
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     @PostMapping
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+    public ResponseEntity<?> addProduct(@RequestBody Product product) {
+        if (productRepository.existsByName(product.getName())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Product already exists!"));
+        }
+  
         return new ResponseEntity<>(productService.addProduct(product), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable long id, @RequestBody Product product) {
+    public ResponseEntity<Product> updateProduct(@PathVariable long id, @Valid @RequestBody Product product) {
         Product updatedProduct = productService.updateProduct(id, product);
 
         if (updatedProduct != null) {
             return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
         }
         else {
-            return null;
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 

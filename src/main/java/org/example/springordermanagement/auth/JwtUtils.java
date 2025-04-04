@@ -86,7 +86,7 @@ public class JwtUtils {
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder().subject(userPrincipal.getUsername()).issuedAt(now).expiration(expiryDate)
-                .signWith(privateKey, SignatureAlgorithm.RS256).compact();
+                .signWith(privateKey).compact();
     }
 
     public String getUserNameFromJwtToken(String token) {

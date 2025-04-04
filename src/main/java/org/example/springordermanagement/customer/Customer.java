@@ -8,6 +8,7 @@ import org.example.springordermanagement.order.Order;
 import org.example.springordermanagement.auth.Role;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -18,10 +19,11 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Size(min = 2)
+    @Size(min = 2, max = 20)
     @NotNull
     private String name;
-    @Size(min = 2)
+
+    @Size(min = 2, max = 20)
     @NotNull
     private String surname;
 
@@ -31,6 +33,7 @@ public class Customer {
 
     @Email
     @NotNull
+    @Size(max = 100)
     private String email;
 
     @Pattern(regexp = "^\\+7\\(\\d{3}\\)\\d{3}-\\d{2}-\\d{2}$")
@@ -42,6 +45,12 @@ public class Customer {
     private String password;
 
     private LocalDate registrationDate;
+
+    @Column(name = "failed_login_attempts", nullable = false, columnDefinition = "integer default 0")
+    private int failedLoginAttempt;
+
+    @Column(name = "lock_time")
+    private LocalDateTime lockTime;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "customer_roles",
